@@ -1,0 +1,55 @@
+---
+- name: 批量创建虚拟环境并安装数据科学库
+  hosts: cm5_cluster
+  become: yes                # 需要 root 安装系统包
+  vars:
+    venv_path: "/home/{{ ansible_user }}/venv"
+    python_packages:
+      - pandas
+      - numpy
+      - opencv-python
+      - matplotlib
+      - seaborn
+      - xgboost
+      - pillow
+      - onnxruntime
+
+  tasks:
+    - name: 安装 python3-venv 和编译依赖
+      apt:
+        name:
+          - virtualenv 
+          - python3-venv
+          - python3-dev        # 某些包需要头文件
+          - build-essential    # 编译扩展时用
+        update_cache: yes
+        state: present
+
+    - name: 创建虚拟环境（如已存在则跳过）
+      command: "virtualenv -p python3 {{ venv_path }}"
+      args:
+        creates: "{{ venv_path }}/bin/activate"
+
+    - name: 升级虚拟环境中的 pip
+      pip:
+        executable: "{{ venv_path }}/bin/pip"
+        name: pip
+        state: latest
+
+    - name: 安装 Python 库到虚拟环境
+      pip:
+        executable: "{{ venv_path }}/bin/pip"
+        name: "{{ python_packages }}"
+        state: present
+
+    - name: 写入自动激活脚本
+      copy:
+        dest: /etc/profile.d/venv.sh
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          # Automatically activate Python venv for all login shells
+          if [ -d "{{ venv_path }}" ]; then
+              source {{ venv_path }}/bin/activate
+          fi

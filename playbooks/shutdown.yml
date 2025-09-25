@@ -1,0 +1,7 @@
+---
+- name: 批量关机
+  hosts: cm5_cluster
+  become: yes  # 需要 root 权限来关机
+  tasks:
+    - name: 关闭系统
+      command: shutdown -h now

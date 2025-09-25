@@ -1,0 +1,8 @@
+---
+- hosts: cm5_cluster
+  gather_facts: no
+  tasks:
+    - name: 推送公钥
+      ansible.posix.authorized_key:
+        user: pi
+        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"

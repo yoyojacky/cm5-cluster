@@ -1,0 +1,22 @@
+---
+- name: 批量采集主机名、IP、磁盘信息
+  hosts: cm5_cluster
+  gather_facts: yes                 # 需要 Ansible facts
+  vars:
+    report_dir:  "{{ playbook_dir }}/../report"
+  tasks:
+
+    # 1. 确保本地存放目录存在
+    - name: 创建本地 report 目录
+      delegate_to: localhost
+      file:
+        path: "{{ report_dir }}"
+        state: directory
+      run_once: yes
+
+    # 2. 用 template 把每台机器的信息渲染成一行 JSON
+    - name: 生成本机信息文件
+      template:
+        src: host-info.json.j2
+        dest: "{{ report_dir }}/{{ inventory_hostname }}.json"
+      delegate_to: localhost

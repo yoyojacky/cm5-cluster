@@ -1,0 +1,12 @@
+all:
+  children:
+    cm5_cluster:
+      hosts:
+        CM501: {ansible_host: 192.168.3.90, node_id: 1}
+        CM502: {ansible_host: 192.168.3.60, node_id: 2}
+        CM503: {ansible_host: 192.168.3.58, node_id: 3}
+        CM504: {ansible_host: 192.168.3.59, node_id: 4}
+      vars:
+        ansible_user: pi
+        ansible_ssh_pass: liweibin # 首次用密码，随后禁用
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'

@@ -1,0 +1,25 @@
+---
+- name: 获取树莓派管理主机的 CPU 温度
+  hosts: cm5_cluster
+  gather_facts: no        # 不收集完整 facts，加速执行
+  become: no              # vcgencmd 默认允许 pi 用户执行，无需 sudo
+
+  tasks:
+    - name: 执行 vcgencmd measure_temp 获取实时温度
+      ansible.builtin.command: vcgencmd measure_temp
+      register: temp_raw  # 把命令输出保存在变量 temp_raw 中
+
+    - name: 解析温度数值（去掉前缀与单位）
+      ansible.builtin.set_fact:
+        cpu_temp: "{{ (temp_raw.stdout | regex_replace('temp=', '') | regex_replace(\"'C\\n\", '')) }}"
+
+    - name: 在控制台打印每台主机的温度
+      ansible.builtin.debug:
+        msg: "主机 {{ inventory_hostname }} 的 CPU 温度为 {{ cpu_temp }}°C"
+
+    - name: 将结果追加到本地汇总文件（可选）
+      ansible.builtin.lineinfile:
+        path: "./cpu_temp_summary.txt"
+        line: "{{ '%Y-%m-%d %H:%M:%S' | strftime }} - {{ inventory_hostname }} - {{ cpu_temp }}°C"
+        create: yes
+      delegate_to: localhost  # 在控制节点上写文件

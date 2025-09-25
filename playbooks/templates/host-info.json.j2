@@ -1,0 +1,3 @@
+{# 取根分区 / 的信息 #}
+{% set root = ansible_mounts | selectattr('mount','equalto','/') | first %}
+{"hostname":"{{ ansible_hostname }}","ipv4":{{ ansible_all_ipv4_addresses | to_json }},"disk_GB":"{{ (root.block_total * root.block_size / 1024 / 1024 / 1024) | round(2) }}","used_GB":"{{ (root.block_used * root.block_size / 1024 / 1024 / 1024) | round(2) }}","usage":"{{ (root.block_used / root.block_total * 100) | round(1) }}%"}
